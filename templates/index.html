@@ -130,6 +130,11 @@
             <img src="{{ url_for('static', filename='FreeVector-Pizza-Icons.jpg') }}">
         </div>
     </div>
+    <div id="sectionAttente">
+        {% for commande in attenteLivraison %}
+            <div>{{ commande }}</div>
+        {% endfor %}
+    </div>
 
 </body>
 </html>

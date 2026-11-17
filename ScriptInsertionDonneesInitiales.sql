@@ -30,3 +30,6 @@ SELECT * FROM sauce;
 SELECT * FROM `client`;
 SELECT * FROM pizza;
 SELECT * FROM garnitures_pour_pizza;
+
+
+SELECT * FROM commandes_attente_livraison;

@@ -57,6 +57,33 @@ def index(resume = []):
     sauces = cursor.fetchall()
     cursor.execute("SELECT * FROM croute")
     croutes = cursor.fetchall()
+
+    # Aller chercher dans la base de donnée les pizza en attente de livraison
+    # On a pas mal besoin de toute la BD pour les afficher...
+    # Sauf bien sûr pour les pizzas qui ne sont pas en attente de livraison
+    # Il faut des left join car certaines pizza n'ont pas de garnitures
+    # Et le 2e left join sinon ça risque d'annuler le premier
+    cursor.execute("""
+    SELECT
+        pizza.id AS idPizza,
+        client.nom AS nomClient,
+        client.adresse AS adresseClient,
+        croute.nom AS nomCroute,
+        sauce.nom AS nomSauce,
+        garniture.nom as nomGarniture
+    FROM commandes_attente_livraison
+    JOIN pizza ON commandes_attente_livraison.id_pizza = pizza.id
+    JOIN client ON pizza.id_client = client.id
+    JOIN croute ON pizza.id_croute = croute.id
+    JOIN sauce ON pizza.id_sauce = sauce.id
+    LEFT JOIN garnitures_pour_pizza ON garnitures_pour_pizza.id_pizza = pizza.id
+    LEFT JOIN garniture ON garnitures_pour_pizza.id_garniture = garniture.id
+    """)
+    attenteLivraison = cursor.fetchall()
+
+    # Maintenant, il faut mettre les données dans le bon format avant de les envoyer au HTML:
+
+
     connexion.commit()
     cursor.close()
 
@@ -66,7 +93,8 @@ def index(resume = []):
         garnitures = garnitures,
         sauces = sauces,
         croutes = croutes,
-        resume = resume)
+        resume = resume,
+        attenteLivraison = attenteLivraison)
 
 
 
@@ -94,30 +122,31 @@ def commander():
         connexion.start_transaction()
 
         # Étape 1 = client existe-t-il déjà? Select avec Where nom et adresse match
-        cursor.execute(f"SELECT id FROM client WHERE nom = '{nom}' AND adresse = '{adresse}'")
+        # Syntaxe provenant de: https://dev.mysql.com/doc/connector-python/en/connector-python-api-mysqlcursor-execute.html?utm_source=chatgpt.com
+        cursor.execute("SELECT id FROM client WHERE nom = %s AND adresse = %s", (nom, adresse))
         clients = cursor.fetchall()
         if (len(clients) > 0):
             idClient = clients[0]["id"]
 
         # Étape 2 = Insert le cient s'il n'existe pas, puis on retient son ID
         if (idClient == None):
-            cursor.execute(f"INSERT INTO client (nom, adresse) VALUES('{nom}', '{adresse}')")
+            cursor.execute("INSERT INTO client (nom, adresse) VALUES(%s, %s)", (nom, adresse))
             idClient = cursor.lastrowid
 
         # Étape 3 = Insert pizza avec l'ID du client
-        cursor.execute(f"SELECT id FROM croute WHERE nom = '{croute}'")
+        cursor.execute("SELECT id FROM croute WHERE nom = %s", [croute])
         idCroute = cursor.fetchall()[0]["id"]
-        cursor.execute(f"SELECT id FROM sauce WHERE nom = '{sauce}'")
+        cursor.execute("SELECT id FROM sauce WHERE nom = %s", [sauce])
         idSauce = cursor.fetchall()[0]["id"]
-        cursor.execute(f"INSERT INTO pizza (id_client, id_croute, id_sauce) VALUES('{idClient}', '{idCroute}', '{idSauce}')")
+        cursor.execute("INSERT INTO pizza (id_client, id_croute, id_sauce) VALUES(%s, %s, %s)", (idClient, idCroute, idSauce))
         idPizza = cursor.lastrowid
 
         # Étape 4 = Insert les garnitures de la pizza
         for i in range(len(garnitures)):
             if (garnitures[i] != "aucun"):
-                cursor.execute(f"SELECT * FROM garniture WHERE nom = '{garnitures[i]}'")
+                cursor.execute("SELECT * FROM garniture WHERE nom = %s", [garnitures[i]])
                 idGarniture = cursor.fetchall()[0]["id"]
-                cursor.execute(f"INSERT INTO garnitures_pour_pizza (id_pizza, id_garniture) VALUES('{idPizza}', '{idGarniture}')")
+                cursor.execute("INSERT INTO garnitures_pour_pizza (id_pizza, id_garniture) VALUES(%s, %s)", (idPizza, idGarniture))
 
         # 5. Data à renvoyer pour afficher résumé de la commande
         resume = [nom, adresse, croute, sauce]
