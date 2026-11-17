@@ -130,9 +130,27 @@
             <img src="{{ url_for('static', filename='FreeVector-Pizza-Icons.jpg') }}">
         </div>
     </div>
+    <!-- https://jinja.palletsprojects.com/en/stable/templates/ , ctrl+f ".items()"-->
     <div id="sectionAttente">
-        {% for commande in attenteLivraison %}
-            <div>{{ commande }}</div>
+        {% for pizza in attenteLivraison %}
+            <div class="pizzaEnAttente">
+                {% for cle, information in pizza.items() %}
+                    <div>
+                        {% if cle != "nomGarnitures" %}
+                            <span>{{cle}}:</span>
+                            <span>{{information}}</span>
+                        {% endif %}
+                        <ul>
+                            {% if cle == "nomGarnitures" %}
+                                {% for garniture in information %}
+                                    <li>{{garniture}}</li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endfor %}
+                <a>RETIRER</a>
+            </div>
         {% endfor %}
     </div>
 

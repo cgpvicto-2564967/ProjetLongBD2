@@ -33,9 +33,83 @@ if connexion.is_connected():
 else:
     print("Échec de la connexion à la base de données")
 
-
-
-
+# ATTENTION: Cette fonction est un deep module black box. Ça sert pas à grand chose d'analyser son contenu (sauf si on veut sauver en performances car algorithmie dégeulasse)
+def formatageSqlToJinja2(cursor):
+    # Aller chercher dans la base de donnée les pizza en attente de livraison
+        # On a pas mal besoin de toute la BD pour les afficher...
+        # Sauf bien sûr pour les pizzas qui ne sont pas en attente de livraison
+        # Il faut des left join car certaines pizza n'ont pas de garnitures
+        # Et le 2e left join sinon ça risque d'annuler le premier
+        # Rappel left join = ce qui est à gauche n'a pas besoin de match pour entrer dans le select mais ce qui est à droite oui.
+        # On a aussi besoin du order by car l'algorithmie de reformatage en dépends
+        cursor.execute("""
+        SELECT
+            pizza.id AS idPizza,
+            client.nom AS nomClient,
+            client.adresse AS adresseClient,
+            croute.nom AS nomCroute,
+            sauce.nom AS nomSauce,
+            garniture.nom as nomGarniture
+        FROM commandes_attente_livraison
+        JOIN pizza ON commandes_attente_livraison.id_pizza = pizza.id
+        JOIN client ON pizza.id_client = client.id
+        JOIN croute ON pizza.id_croute = croute.id
+        JOIN sauce ON pizza.id_sauce = sauce.id
+        LEFT JOIN garnitures_pour_pizza ON garnitures_pour_pizza.id_pizza = pizza.id
+        LEFT JOIN garniture ON garnitures_pour_pizza.id_garniture = garniture.id
+        ORDER BY pizza.id ASC
+        """)
+        attenteLivraison = cursor.fetchall()
+    
+        # Maintenant, il faut organiser les données dans le bon format avant de les envoyer au HTML.
+        # Pour que ce soit facile avec jinja, on vaut deux boucles for imbriquées pour chaque pizza et pour chaque garniture.
+        """
+        La structure de donnée qu'on a depuis le sql (exemple):
+        {'idPizza': 1, 'nomClient': 'a', 'adresseClient': 'b', 'nomCroute': 'Classique', 'nomSauce': 'Tomate', 'nomGarniture': Pepperoni}
+        {'idPizza': 1, 'nomClient': 'a', 'adresseClient': 'b', 'nomCroute': 'Classique', 'nomSauce': 'Tomate', 'nomGarniture': Champignons}
+        {'idPizza': 1, 'nomClient': 'a', 'adresseClient': 'b', 'nomCroute': 'Classique', 'nomSauce': 'Tomate', 'nomGarniture': Oignons}
+        {'idPizza': 1, 'nomClient': 'a', 'adresseClient': 'b', 'nomCroute': 'Classique', 'nomSauce': 'Tomate', 'nomGarniture': Poivrons}
+        """
+        """
+        La structure de donnée qu'on veut pour le jinja2... (exemple):
+        [
+            {
+            'idPizza': 1,
+            'nomClient': 'a',
+            'adresseClient': 'b',
+            'nomCroute': 'Classique',
+            'nomSauce': 'Tomate',
+            'nomGarnitures': [
+                                Pepperoni,
+                                Champignons,
+                                Oignons,
+                                Poivrons]}
+        ]
+        """
+        attenteLivraisonFormat = []
+        for i in range(len(attenteLivraison)):
+            # Est-ce qu'on a déjà entré les données pour cette pizza?
+            # Faut reboucler sur tous les éléments du tableau... Algorithmie dégeulasse mais que veux tu... Jinja2 ladies and gents...
+            pizzaDejaRentre = False
+            for j in range(len(attenteLivraisonFormat)):
+                if (attenteLivraisonFormat[j]["idPizza"] == attenteLivraison[i]["idPizza"]):
+                    pizzaDejaRentre = True
+            # Si la pizza n'est pas déjà rentrée:
+            if (pizzaDejaRentre == False):
+                attenteLivraisonFormat.append(
+                    {
+                        'idPizza': attenteLivraison[i]["idPizza"],
+                        'nomClient': attenteLivraison[i]["nomClient"],
+                        'adresseClient': attenteLivraison[i]["adresseClient"],
+                        'nomCroute': attenteLivraison[i]["nomCroute"],
+                        'nomSauce': attenteLivraison[i]["nomSauce"],
+                        'nomGarnitures': [attenteLivraison[i]["nomGarniture"]]
+                    })
+            # Si la pizza a déjà été rentrée, cela veut dire qu'on a affaire à de la garniture extra pour celle-ci:
+            # Et donc on veut lui rajouter sa garniture
+            else:
+                attenteLivraisonFormat[len(attenteLivraisonFormat) - 1]["nomGarnitures"].append(attenteLivraison[i]["nomGarniture"])
+        return attenteLivraisonFormat
 
 # =======================================
 # = Page d'accueil, formulaire commande =
@@ -58,31 +132,7 @@ def index(resume = []):
     cursor.execute("SELECT * FROM croute")
     croutes = cursor.fetchall()
 
-    # Aller chercher dans la base de donnée les pizza en attente de livraison
-    # On a pas mal besoin de toute la BD pour les afficher...
-    # Sauf bien sûr pour les pizzas qui ne sont pas en attente de livraison
-    # Il faut des left join car certaines pizza n'ont pas de garnitures
-    # Et le 2e left join sinon ça risque d'annuler le premier
-    cursor.execute("""
-    SELECT
-        pizza.id AS idPizza,
-        client.nom AS nomClient,
-        client.adresse AS adresseClient,
-        croute.nom AS nomCroute,
-        sauce.nom AS nomSauce,
-        garniture.nom as nomGarniture
-    FROM commandes_attente_livraison
-    JOIN pizza ON commandes_attente_livraison.id_pizza = pizza.id
-    JOIN client ON pizza.id_client = client.id
-    JOIN croute ON pizza.id_croute = croute.id
-    JOIN sauce ON pizza.id_sauce = sauce.id
-    LEFT JOIN garnitures_pour_pizza ON garnitures_pour_pizza.id_pizza = pizza.id
-    LEFT JOIN garniture ON garnitures_pour_pizza.id_garniture = garniture.id
-    """)
-    attenteLivraison = cursor.fetchall()
-
-    # Maintenant, il faut mettre les données dans le bon format avant de les envoyer au HTML:
-
+    attenteLivraisonFormat = formatageSqlToJinja2(cursor)
 
     connexion.commit()
     cursor.close()
@@ -94,7 +144,7 @@ def index(resume = []):
         sauces = sauces,
         croutes = croutes,
         resume = resume,
-        attenteLivraison = attenteLivraison)
+        attenteLivraison = attenteLivraisonFormat)
 
 
 
