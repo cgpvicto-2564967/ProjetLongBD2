@@ -74,6 +74,9 @@
             <br>
             <div>*Attention: ne pas choisir deux fois la même garniture.</div>
             <br>
+            {% if resume|length == 0 %}
+                <input type="submit" value="Soumettre" />
+            {% endif %}
         </form>
         <div id="resumeCommande">
             <div>
@@ -120,7 +123,9 @@
                         </span>
                     </li>
                 </ul>
-                <input type="submit" form="formulaireCommande" value="Soumettre" />
+                {% if resume|length > 0 %}
+                    <a href="/">Entrer une nouvelle commande</a>
+                {% endif %}
             </div>
             <img src="{{ url_for('static', filename='FreeVector-Pizza-Icons.jpg') }}">
         </div>
