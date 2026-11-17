@@ -1,0 +1,10 @@
+Projet long pizza:
+
+- Traitement formulaire
+	- Pas 2 garnitures pareil (fait échouer requete)
+	- Doit donner nom
+	- Doit donner adresse
+
+- Confirmation commande avant soumission
+- Affichage liste pizzas en attente de livraison
+- Compléter une livraison et delete la pizza et refresh affichage
