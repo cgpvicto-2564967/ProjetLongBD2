@@ -220,6 +220,16 @@ def commander():
 
 
 
+@app.route("/retirer/<int:idPizza>")
+def RetirerCommande(idPizza):
+    try:
+        cursor = connexion.cursor(dictionary=True)
+        cursor.execute("DELETE FROM commandes_attente_livraison WHERE id_pizza = %s", [idPizza])
+        connexion.commit()
+        cursor.close()
+        return index()
+    except mysql.connector.Error as erreur:
+        return index()
 
 
 

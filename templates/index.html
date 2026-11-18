@@ -8,127 +8,131 @@
 <body>
     <h1>Veuillez entrer les données de la commande:</h1>
     <div id="sectionCommande">
-        <form action="/commander" method="post" id="formulaireCommande">
+        {% if resume|length == 0 %}
+            <form action="/commander" method="post" id="formulaireCommande">
 
-            <br>
-            <label for="nom">Nom du client:</label>
-            <input type="text" id="nom" name="nom" />
-            <br>
-            
-            <br>
-            <label for="adresse">Adresse du client:</label>
-            <input type="text" id="adresse" name="adresse" />
-            <br>
+                <br>
+                <label for="nom">Nom du client:</label>
+                <input type="text" id="nom" name="nom" />
+                <br>
+                
+                <br>
+                <label for="adresse">Adresse du client:</label>
+                <input type="text" id="adresse" name="adresse" />
+                <br>
 
 
-            <br>
-            <label for="croute">Croute de la pizza:</label>
-            <select id="croute" name="croute">
-                {% for croute in croutes %}
-                <option value="{{ croute.nom }}">{{ croute.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
+                <br>
+                <label for="croute">Croute de la pizza:</label>
+                <select id="croute" name="croute">
+                    {% for croute in croutes %}
+                    <option value="{{ croute.nom }}">{{ croute.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
 
-            <br>
-            <label for="sauce">Sauce de la pizza:</label>
-            <select id="sauce" name="sauce">
-                {% for sauce in sauces %}
-                <option value="{{ sauce.nom }}">{{ sauce.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
+                <br>
+                <label for="sauce">Sauce de la pizza:</label>
+                <select id="sauce" name="sauce">
+                    {% for sauce in sauces %}
+                    <option value="{{ sauce.nom }}">{{ sauce.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
 
-            <br>
-            <label for="garniture0">Choix de garnitures #1 de la pizza:</label>
-            <select id="garniture0" name="garniture0">
-                <option value="aucun">aucun</option>
-                {% for garniture in garnitures %}
-                <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <label for="garniture1">Choix de garnitures #2 de la pizza:</label>
-            <select id="garniture1" name="garniture1">
-                <option value="aucun">aucun</option>
-                {% for garniture in garnitures %}
-                <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <label for="garniture2">Choix de garnitures #3 de la pizza:</label>
-            <select id="garniture2" name="garniture2">
-                <option value="aucun">aucun</option>
-                {% for garniture in garnitures %}
-                <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <label for="garniture3">Choix de garnitures #4 de la pizza:</label>
-            <select id="garniture3" name="garniture3">
-                <option value="aucun">aucun</option>
-                {% for garniture in garnitures %}
-                <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <div>*Attention: ne pas choisir deux fois la même garniture.</div>
-            <br>
-            {% if resume|length == 0 %}
-                <input type="submit" value="Soumettre" />
-            {% endif %}
-        </form>
-        <div id="resumeCommande">
-            <div>
-                <h2>Résumé de la commande: </h2>
-                <ul>
-                    <li>
-                        <span class="ligneResume">
-                            <span>NOM:</span><span>{{ resume[0] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>ADRESSE:</span><span>{{ resume[1] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>CROUTE:</span><span>{{ resume[2] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>SAUCE:</span><span>{{ resume[3] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>CHOIX1:</span><span>{{ resume[4] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>CHOIX2:</span><span>{{ resume[5] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>CHOIX3:</span><span>{{ resume[6] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                    <li>
-                        <span class="ligneResume">
-                            <span>CHOIX4:</span><span>{{ resume[7] if resume else 'X' }}</span>
-                        </span>
-                    </li>
-                </ul>
-                {% if resume|length > 0 %}
-                    <a href="/">Entrer une nouvelle commande</a>
+                <br>
+                <label for="garniture0">Choix de garnitures #1 de la pizza:</label>
+                <select id="garniture0" name="garniture0">
+                    <option value="aucun">aucun</option>
+                    {% for garniture in garnitures %}
+                    <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="garniture1">Choix de garnitures #2 de la pizza:</label>
+                <select id="garniture1" name="garniture1">
+                    <option value="aucun">aucun</option>
+                    {% for garniture in garnitures %}
+                    <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="garniture2">Choix de garnitures #3 de la pizza:</label>
+                <select id="garniture2" name="garniture2">
+                    <option value="aucun">aucun</option>
+                    {% for garniture in garnitures %}
+                    <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="garniture3">Choix de garnitures #4 de la pizza:</label>
+                <select id="garniture3" name="garniture3">
+                    <option value="aucun">aucun</option>
+                    {% for garniture in garnitures %}
+                    <option value="{{ garniture.nom }}">{{ garniture.nom }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <div>*Attention: ne pas choisir deux fois la même garniture.</div>
+                <br>
+                {% if resume|length == 0 %}
+                    <input type="submit" value="Soumettre" />
                 {% endif %}
+            </form>
+        {% endif %}
+        {% if resume|length > 0 %}
+            <div id="resumeCommande">
+                <div>
+                    <h2>Résumé de la commande: </h2>
+                    <ul>
+                        <li>
+                            <span class="ligneResume">
+                                <span>NOM:</span><span>{{ resume[0] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>ADRESSE:</span><span>{{ resume[1] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>CROUTE:</span><span>{{ resume[2] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>SAUCE:</span><span>{{ resume[3] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>CHOIX1:</span><span>{{ resume[4] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>CHOIX2:</span><span>{{ resume[5] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>CHOIX3:</span><span>{{ resume[6] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                        <li>
+                            <span class="ligneResume">
+                                <span>CHOIX4:</span><span>{{ resume[7] if resume else 'X' }}</span>
+                            </span>
+                        </li>
+                    </ul>
+                    {% if resume|length > 0 %}
+                        <a href="/">Entrer une nouvelle commande</a>
+                    {% endif %}
+                </div>
+                <img src="{{ url_for('static', filename='FreeVector-Pizza-Icons.jpg') }}">
             </div>
-            <img src="{{ url_for('static', filename='FreeVector-Pizza-Icons.jpg') }}">
-        </div>
+        {% endif %}
     </div>
     <!-- https://jinja.palletsprojects.com/en/stable/templates/ , ctrl+f ".items()"-->
     <div id="sectionAttente">
@@ -149,7 +153,7 @@
                         </ul>
                     </div>
                 {% endfor %}
-                <a>RETIRER</a>
+                <a href="{{ url_for('RetirerCommande', idPizza = pizza['idPizza'] ) }}">RETIRER</a>
             </div>
         {% endfor %}
     </div>
